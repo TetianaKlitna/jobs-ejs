@@ -75,7 +75,6 @@ app.use('/sessions', require('./routes/sessionRoutes'));
 app.use(
   '/secretWord',
   require('./middleware/auth'),
-  csrfMiddleware,
   require('./routes/secretWord')
 );
 
