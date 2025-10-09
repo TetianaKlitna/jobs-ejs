@@ -1,15 +1,30 @@
 const express = require('express');
 require('express-async-errors');
+require('dotenv').config();
 
 const app = express();
+
+const cookieParser = require('cookie-parser');
+const csrf = require('host-csrf');
+
+app.use(cookieParser(process.env.COOKIE_SECRET));
+const csrfMiddleware = csrf.csrf();
+
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
+
+const passport = require('passport');
+const passportInit = require('./passport/passportInit');
+
+const connectFlash = require('connect-flash');
+const storeLocals = require('./middleware/storeLocals');
+const { trusted } = require('mongoose');
 
 app.set('view engine', 'ejs');
 app.use(require('body-parser').urlencoded({ extended: true }));
 
-require('dotenv').config();
-const session = require('express-session');
-const MongoDBStore = require('connect-mongodb-session')(session);
 const url = process.env.MONGO_URI;
+const port = process.env.PORT || 3000;
 
 const store = new MongoDBStore({
   uri: url,
@@ -35,14 +50,22 @@ if (app.get('env') === 'production') {
 }
 
 app.use(session(sessionParms));
-const passport = require('passport');
-const passportInit = require('./passport/passportInit');
+
 passportInit();
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(require('connect-flash')());
-app.use(require('./middleware/storeLocals'));
+app.use(connectFlash());
+app.use(storeLocals);
+
+app.use(csrfMiddleware);
+
+app.use((req, res, next) => {
+  if (req.method === 'GET') {
+    csrf.getToken(req, res);
+  }
+  next();
+});
 
 app.get('/', (req, res) => {
   res.render('index');
@@ -52,6 +75,7 @@ app.use('/sessions', require('./routes/sessionRoutes'));
 app.use(
   '/secretWord',
   require('./middleware/auth'),
+  csrfMiddleware,
   require('./routes/secretWord')
 );
 
@@ -63,8 +87,6 @@ app.use((err, req, res, next) => {
   res.status(500).send(err.message);
   console.log(err);
 });
-
-const port = process.env.PORT || 3000;
 
 const start = async () => {
   try {
