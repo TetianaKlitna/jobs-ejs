@@ -2,6 +2,10 @@ const express = require('express');
 require('express-async-errors');
 require('dotenv').config();
 
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+
 const app = express();
 
 const methodOverride = require('method-override');
@@ -28,6 +32,17 @@ const jobsRouter = require('./routes/jobs');
 
 app.set('view engine', 'ejs');
 app.use(require('body-parser').urlencoded({ extended: true }));
+
+// If behind a proxy/load balancer
+app.set('trust proxy', 1);
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  })
+);
+app.use(helmet());
+app.use(xss());
 
 app.use(
   methodOverride((req, res) => {
