@@ -4,6 +4,8 @@ require('dotenv').config();
 
 const app = express();
 
+const methodOverride = require('method-override');
+
 const cookieParser = require('cookie-parser');
 const csrf = require('host-csrf');
 
@@ -18,13 +20,30 @@ const passportInit = require('./passport/passportInit');
 
 const connectFlash = require('connect-flash');
 const storeLocals = require('./middleware/storeLocals');
-const { trusted } = require('mongoose');
+
+const authMiddleware = require('./middleware/auth');
+
+const secretWordRouter = require('./routes/secretWord');
+const jobsRouter = require('./routes/jobs');
 
 app.set('view engine', 'ejs');
 app.use(require('body-parser').urlencoded({ extended: true }));
 
+app.use(
+  methodOverride((req, res) => {
+    if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+      const m = String(req.body._method || '')
+        .toUpperCase()
+        .trim();
+      delete req.body._method;
+      return m;
+    }
+    return undefined;
+  })
+);
+
 const url = process.env.MONGO_URI;
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 const store = new MongoDBStore({
   uri: url,
@@ -72,11 +91,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/sessions', require('./routes/sessionRoutes'));
-app.use(
-  '/secretWord',
-  require('./middleware/auth'),
-  require('./routes/secretWord')
-);
+app.use('/secretWord', authMiddleware, secretWordRouter);
+app.use('/jobs', authMiddleware, jobsRouter);
 
 app.use((req, res) => {
   res.status(404).send(`That page (${req.url}) was not found.`);

@@ -1,0 +1,103 @@
+<%- include("partials/head.ejs") %> <%- include("partials/header.ejs") %>
+  <form
+    method="POST"
+    action="<%= job ? '/jobs/' + job._id: '/jobs' %>"
+  >
+    <input type="hidden" name="_method" value="<%= job ? 'PATCH' : 'POST' %>">
+    <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+    <div>
+      <label for="company">company:</label>
+      <input
+        type="text"
+        id="company"
+        name="company"
+        value="<%= job?.company %>"
+      />
+    </div>
+    <div>
+      <label for="position">position:</label>
+      <input
+        type="text"
+        id="position"
+        name="position"
+        value="<%= job?.position %>"
+      />
+    </div>
+    <div>
+      <label for="status">status:</label>
+      <select id="status" name="status">
+        <option value="pending"  <%= job?.status === 'pending' ? 'selected' : '' %>>pending</option>
+        <option value="interview" <%= job?.status === 'interview' ? 'selected' : '' %>>interview</option>
+        <option value="declined" <%= job?.status === 'declined' ? 'selected' : '' %>>declined</option>
+      </select>
+    </div>
+    <div>
+      <label for="workMode">work mode:</label>
+      <select id="workMode" name="workMode" value="<%= job?.workMode %>">
+        <option value="onsite" <%= job?.workMode === 'onsite'? 'selected': '' %>>onsite</option>
+        <option value="remote" <%= job?.workMode === 'remote'? 'selected': '' %>>remote</option>
+        <option value="hybrid" <%= job?.workMode === 'hybrid'? 'selected': '' %>>hybrid</option>
+      </select>
+    </div>
+    <div>
+      <label for="jobType">job type:</label>
+      <select id="jobType" name="jobType" value="<%= job?.jobType %>">
+        <option value="full-time" <%= job?.jobType === 'full-time'? 'selected': ''  %>>full-time</option>
+        <option value="part-time" <%= job?.jobType === 'part-time'? 'selected': ''%>>part-time</option>
+        <option value="contract" <%= job?.jobType === 'contract'? 'selected': ''%>>contract</option>
+        <option value="internship" <%= job?.jobType === 'internship'? 'selected': ''%>>internship</option>
+      </select>
+    </div>
+    <div>
+      <label for="location">location:</label>
+      <input
+        type="text"
+        id="location"
+        name="location"
+        value="<%= job?.location %>"
+      />
+    </div>
+    <div>
+      <label for="salaryMin">Salary Min:</label>
+      <input
+        type="number"
+        id="salaryMin"
+        name="salaryMin"
+        placeholder="like 50000"
+        value="<%= job?.salaryRange?.min %>"
+      />
+    </div>
+    <div>
+      <label for="salaryMax">Salary Max:</label>
+      <input
+        type="number"
+        id="salaryMax"
+        name="salaryMax"
+        placeholder="like 80000"
+        value="<%= job?.salaryRange?.max %>"
+      />
+    </div>
+    <div>
+      <label for="salaryCurrency">Currency:</label>
+      <input
+        type="text"
+        id="salaryCurrency"
+        name="salaryCurrency"
+        placeholder="like USD"
+        value="<%= job?.salaryRange?.currency %>"
+      />
+    </div>
+    <div>
+      <label for="appliedDate">applied date:</label>
+      <input
+        type="date"
+        id="appliedDate"
+        name="appliedDate"
+        value="<%= job?.appliedDate ? job.appliedDate.toISOString().split('T')[0] : '' %>"
+      />
+    </div>
+    <button type="submit" id="adding-job"><%= job? 'edit': 'add' %></button>
+    <a href="/jobs"><button type="button" id="edit-cancel">cancel</button></a>
+  </form>
+  <%- include("partials/footer.ejs") %>
+
