@@ -112,14 +112,13 @@ const getEditJobPage = async (req, res, next) => {
 // };
 
 const updateJob = async (req, res, next) => {
+  const {
+    user: { _id: userId },
+    params: { id: jobId },
+    body,
+  } = req;
+  const userTz = req.userTz;
   try {
-    const {
-      user: { _id: userId },
-      params: { id: jobId },
-      body,
-    } = req;
-    const userTz = req.userTz;
-
     const job = await Job.findOne({ _id: jobId, createdBy: userId });
     if (!job) {
       req.flash('error', `No job with id: ${jobId}`);
@@ -153,7 +152,11 @@ const updateJob = async (req, res, next) => {
     if (error.name === 'ValidationError') {
       parseVErr(error, req);
       return res.render('job', {
-        job: { _id: req.params.id, ...req.body },
+        job: {
+          _id: req.params.id,
+          ...req.body,
+          appliedDateLocal: req.body.appliedDate,
+        },
         _csrf: res.locals._csrf,
         errors: req.flash('error'),
       });
