@@ -36,7 +36,7 @@ const createJob = async (req, res, next) => {
         max: req.body.salaryMax,
         currency: req.body.currency,
       },
-      appliedDate: dateInputToUtc(body.appliedDate, userTz),
+      appliedDate: dateInputToUtc(req.body.appliedDate, userTz),
       createdBy: req.user._id,
     });
     req.flash('info', 'Job created successfully!');
