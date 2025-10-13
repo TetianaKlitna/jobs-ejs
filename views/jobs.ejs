@@ -1,6 +1,6 @@
 <%- include("partials/head.ejs") %> <%- include("partials/header.ejs") %>
 <a href="/">Click this link to return.</a>
-<br>
+<br />
 <h2>Jobs List</h2>
 <a href="/jobs/new">
   <button type="button">add job</button>
@@ -26,8 +26,7 @@
     <td><%= job.jobType %></td>
     <td><%= job.location %></td>
     <td><%= job.salaryRangeFormat %></td>
-    <td><%=job.appliedDateFormat %></td>
-    <td></td>
+    <td><%=job.appliedDateLocal %></td>
     <td>
       <a href="/jobs/edit/<%= job.id %>">
         <button type="button">edit</button>

@@ -62,7 +62,7 @@
       <input
         type="number"
         id="salaryMin"
-        name="salaryMin"
+        name="salaryRange[min]"
         placeholder="like 50000"
         value="<%= job?.salaryRange?.min %>"
       />
@@ -72,7 +72,7 @@
       <input
         type="number"
         id="salaryMax"
-        name="salaryMax"
+        name="salaryRange[max]"
         placeholder="like 80000"
         value="<%= job?.salaryRange?.max %>"
       />
@@ -82,7 +82,7 @@
       <input
         type="text"
         id="salaryCurrency"
-        name="salaryCurrency"
+        name="salaryRange[currency]"
         placeholder="like USD"
         value="<%= job?.salaryRange?.currency %>"
       />
@@ -93,7 +93,7 @@
         type="date"
         id="appliedDate"
         name="appliedDate"
-        value="<%= job?.appliedDate ? job.appliedDate.toISOString().split('T')[0] : '' %>"
+        value="<%= job?.appliedDateLocal %>"
       />
     </div>
     <button type="submit" id="adding-job"><%= job? 'edit': 'add' %></button>

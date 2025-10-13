@@ -95,6 +95,12 @@ app.use(storeLocals);
 app.use(csrfMiddleware);
 
 app.use((req, res, next) => {
+  const match = /(?:^|;\s*)tz=([^;]+)/.exec(req.headers.cookie || '');
+  req['userTz'] = match ? decodeURIComponent(match[1]) : 'UTC';
+  next();
+});
+
+app.use((req, res, next) => {
   if (req.method === 'GET') {
     csrf.getToken(req, res);
   }
