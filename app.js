@@ -1,15 +1,64 @@
 const express = require('express');
 require('express-async-errors');
+require('dotenv').config();
+
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const xss = require('xss-clean');
 
 const app = express();
+
+const methodOverride = require('method-override');
+
+const cookieParser = require('cookie-parser');
+const csrf = require('host-csrf');
+
+app.use(cookieParser(process.env.COOKIE_SECRET));
+const csrfMiddleware = csrf.csrf();
+
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
+
+const passport = require('passport');
+const passportInit = require('./passport/passportInit');
+
+const connectFlash = require('connect-flash');
+const storeLocals = require('./middleware/storeLocals');
+
+const authMiddleware = require('./middleware/auth');
+
+const secretWordRouter = require('./routes/secretWord');
+const jobsRouter = require('./routes/jobs');
 
 app.set('view engine', 'ejs');
 app.use(require('body-parser').urlencoded({ extended: true }));
 
-require('dotenv').config();
-const session = require('express-session');
-const MongoDBStore = require('connect-mongodb-session')(session);
+// If behind a proxy/load balancer
+app.set('trust proxy', 1);
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  })
+);
+app.use(helmet());
+app.use(xss());
+
+app.use(
+  methodOverride((req, res) => {
+    if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+      const m = String(req.body._method || '')
+        .toUpperCase()
+        .trim();
+      delete req.body._method;
+      return m;
+    }
+    return undefined;
+  })
+);
+
 const url = process.env.MONGO_URI;
+const port = process.env.PORT || 3001;
 
 const store = new MongoDBStore({
   uri: url,
@@ -35,25 +84,36 @@ if (app.get('env') === 'production') {
 }
 
 app.use(session(sessionParms));
-const passport = require('passport');
-const passportInit = require('./passport/passportInit');
+
 passportInit();
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(require('connect-flash')());
-app.use(require('./middleware/storeLocals'));
+app.use(connectFlash());
+app.use(storeLocals);
+
+app.use(csrfMiddleware);
+
+app.use((req, res, next) => {
+  const match = /(?:^|;\s*)tz=([^;]+)/.exec(req.headers.cookie || '');
+  req['userTz'] = match ? decodeURIComponent(match[1]) : 'UTC';
+  next();
+});
+
+app.use((req, res, next) => {
+  if (req.method === 'GET') {
+    csrf.getToken(req, res);
+  }
+  next();
+});
 
 app.get('/', (req, res) => {
   res.render('index');
 });
 
 app.use('/sessions', require('./routes/sessionRoutes'));
-app.use(
-  '/secretWord',
-  require('./middleware/auth'),
-  require('./routes/secretWord')
-);
+app.use('/secretWord', authMiddleware, secretWordRouter);
+app.use('/jobs', authMiddleware, jobsRouter);
 
 app.use((req, res) => {
   res.status(404).send(`That page (${req.url}) was not found.`);
@@ -63,8 +123,6 @@ app.use((err, req, res, next) => {
   res.status(500).send(err.message);
   console.log(err);
 });
-
-const port = process.env.PORT || 3000;
 
 const start = async () => {
   try {
