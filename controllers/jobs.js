@@ -15,7 +15,7 @@ const getAllJobs = async (req, res, next) => {
         (dateFormat = 'MM/dd/yyyy')
       );
     });
-    res.render('jobs', { jobs });
+    res.status(200).render('jobs', { jobs });
   } catch (error) {
     console.error(error);
     next(error);
@@ -40,12 +40,12 @@ const createJob = async (req, res, next) => {
       createdBy: req.user._id,
     });
     req.flash('info', 'Job created successfully!');
-    return res.redirect('/jobs');
+    return res.status(200).redirect('/jobs');
   } catch (error) {
     console.error(error);
     if (error.constructor.name === 'ValidationError') {
       parseVErr(error, req);
-      return res.render('job', {
+      return res.status(400).render('job', {
         job: null,
         _csrf: res.locals._csrf,
         errors: req.flash('error'),
@@ -68,7 +68,7 @@ const getEditJobPage = async (req, res, next) => {
       return res.redirect('/jobs');
     }
     job['appliedDateLocal'] = utcToDateInput(job.appliedDate, userTz);
-    return res.render('job', {
+    return res.status(200).render('job', {
       job,
       _csrf: res.locals._csrf,
     });
@@ -147,11 +147,11 @@ const updateJob = async (req, res, next) => {
 
     await job.save();
     req.flash('info', 'Job updated successfully!');
-    return res.redirect('/jobs');
+    return res.status(200).redirect('/jobs');
   } catch (error) {
     if (error.name === 'ValidationError') {
       parseVErr(error, req);
-      return res.render('job', {
+      return res.status(400).render('job', {
         job: {
           _id: req.params.id,
           ...req.body,
