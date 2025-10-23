@@ -31,7 +31,7 @@ describe('tests for registration and logon', function () {
   it('should register the user', async function () {
     const { expect, request } = await get_chai();
     // added extra password validation rules in UserSchema models/User.js
-    this.password = `${faker.internet.password()}25%`;
+    this.password = `S${faker.internet.password()}25%`;
     this.user = await factory.build('user', { password: this.password });
     const dataToPost = {
       name: this.user.name,
@@ -88,5 +88,20 @@ describe('tests for registration and logon', function () {
     expect(res).to.have.status(200);
     expect(res).to.have.property('text');
     expect(res.text).to.include(this.user.name);
+  });
+  it('should log the user off', async function () {
+    const { expect, request } = await get_chai();
+    const dataToPost = {
+      _csrf: this.csrfToken,
+    };
+    const req = request
+      .execute(app)
+      .post('/sessions/logoff')
+      .set('Cookie', this.csrfCookie)
+      .set('content-type', 'application/x-www-form-urlencoded')
+      .send(dataToPost);
+    const res = await req;
+    expect(res).to.have.status(200);
+    expect(res.text).to.include('link to logon');
   });
 });
