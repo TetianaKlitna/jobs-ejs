@@ -4,7 +4,7 @@ const faker = require('@faker-js/faker').fakerEN_US;
 const FactoryBot = require('factory-bot');
 require('dotenv').config();
 
-const testUserPassword = faker.internet.password();
+const testUserPassword = `S${faker.internet.password()}25%`;
 const factory = FactoryBot.factory;
 const factoryAdapter = new FactoryBot.MongooseAdapter();
 factory.setAdapter(factoryAdapter);
@@ -17,7 +17,7 @@ factory.define('job', Job, {
 factory.define('user', User, {
   name: () => faker.person.fullName(),
   email: () => faker.internet.email(),
-  password: () => faker.internet.password(),
+  password: () => `S${faker.internet.password()}25%`,
 });
 
 const seed_db = async () => {

@@ -81,8 +81,9 @@ describe('tests for registration and logon', function () {
     const req = request
       .execute(app)
       .get('/')
-      .set('Cookie', this.csrfCookie)
-      .set('Cookie', this.sessionCookie)
+      // .set('Cookie', this.csrfCookie)
+      // .set('Cookie', this.sessionCookie)
+      .set('Cookie', `${this.csrfCookie}; ${this.sessionCookie}`)
       .send();
     const res = await req;
     expect(res).to.have.status(200);

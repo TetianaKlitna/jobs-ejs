@@ -1,14 +1,16 @@
-import { format } from 'date-fns';
-import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+const { format } = require('date-fns');
+const { fromZonedTime, toZonedTime } = require('date-fns-tz');
 
-export function dateInputToUtc(dateStr, timezone) {
+function dateInputToUtc(dateStr, timezone) {
   if (!dateStr) return '';
   const utcDate = fromZonedTime(dateStr + 'T00:00:00', timezone);
   return utcDate.toISOString();
 }
 
-export function utcToDateInput(iso, timezone, dateFormat = 'yyyy-MM-dd') {
+function utcToDateInput(iso, timezone, dateFormat = 'yyyy-MM-dd') {
   if (!iso) return '';
   const zoned = toZonedTime(iso, timezone);
   return format(zoned, dateFormat);
 }
+
+module.exports = { dateInputToUtc, utcToDateInput };
