@@ -57,4 +57,45 @@ describe('jobs-ejs puppeteer test', function () {
       console.log('copyright text: ', copyrText);
     });
   });
+  describe('puppeteer job operations', function () {
+    this.timeout(50000);
+    it('click jobs list link', async function () {
+      const { expect } = await import('chai');
+      await Promise.all([
+        page.waitForNavigation(),
+        page.click('a[href="/jobs"]'),
+      ]);
+      const content = await page.content();
+      const jobsCnt = content.split('<tr').length - 1;
+      expect(jobsCnt).to.equal(21); // 20 from db_seed + 1 added
+    });
+    it('click "add job" button', async function () {
+      const { expect } = await import('chai');
+      await Promise.all([
+        page.waitForNavigation(),
+        page.click('a[href="/jobs/new"]'),
+      ]);
+      const company = await page.waitForSelector('form input[name="company"]');
+      const position = await page.waitForSelector(
+        'form input[name="position"]'
+      );
+      const addBtn = await page.waitForSelector('#adding-job');
+      expect(company).to.exist;
+      expect(position).to.exist;
+      expect(addBtn).to.exist;
+    });
+    it('click on the add submit button', async function () {
+      const { expect } = await import('chai');
+      await page.type('form input[name="company"]', 'Company');
+      await page.type('form input[name="position"]', 'Position');
+      await Promise.all([page.waitForNavigation(), page.click('#adding-job')]);
+      const text = await page.content();
+      expect(text).to.include('Job created successfully!');
+      const job = await Job.findOne({
+        company: 'Company',
+        position: 'Position',
+      });
+      expect(job).to.exist;
+    });
+  });
 });
