@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
+    "test": "cross-env NODE_ENV=test mocha tests/*.js --timeout 5000 --exit",
     "start": "nodemon app.js"
   },
   "repository": {
@@ -16,10 +17,20 @@
   },
   "homepage": "https://github.com/TetianaKlitna/jobs-ejs#readme",
   "description": "",
+  "engines": {
+    "node": "20.x"
+  },
   "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
+    "chai": "^6.2.0",
+    "chai-http": "^5.1.2",
+    "cross-env": "^10.1.0",
     "eslint": "^9.36.0",
+    "factory-bot": "^6.3.1",
+    "mocha": "^11.7.4",
     "nodemon": "^3.1.10",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "puppeteer": "^24.26.0"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
